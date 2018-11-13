@@ -69,6 +69,54 @@ describe 'java', type: :class do
     it { is_expected.to contain_file_line('java-home-environment').with_line('JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64/') }
   end
 
+  context 'when select jdk for Ubuntu Bionic (18.04)' do
+    let(:facts) { { osfamily: 'Debian', operatingsystem: 'Ubuntu', lsbdistcodename: 'bionic', operatingsystemrelease: '18.04', architecture: 'amd64' } }
+    let(:params) { { 'distribution' => 'jdk' } }
+
+    it { is_expected.to contain_package('java').with_name('openjdk-11-jdk') }
+    it { is_expected.to contain_file_line('java-home-environment').with_line('JAVA_HOME=/usr/lib/jvm/java-1.11.0-openjdk-amd64/') }
+  end
+
+  context 'when select jre for Ubuntu Bionic (18.04)' do
+    let(:facts) { { osfamily: 'Debian', operatingsystem: 'Ubuntu', lsbdistcodename: 'bionic', operatingsystemrelease: '18.04', architecture: 'amd64' } }
+    let(:params) { { 'distribution' => 'jre' } }
+
+    it { is_expected.to contain_package('java').with_name('openjdk-11-jre-headless') }
+    it { is_expected.to contain_file_line('java-home-environment').with_line('JAVA_HOME=/usr/lib/jvm/java-1.11.0-openjdk-amd64/') }
+  end
+
+  context 'when select oracle-java8-jdk for Ubuntu Bionic (18.04)' do
+    let(:facts) { { osfamily: 'Debian', operatingsystem: 'Ubuntu', lsbdistcodename: 'bionic', operatingsystemrelease: '18.04', architecture: 'amd64' } }
+    let(:params) { { 'distribution' => 'oracle-java8-jdk' } }
+
+    it { is_expected.to contain_package('java').with_name('oracle-java8-jdk') }
+    it { is_expected.to contain_file_line('java-home-environment').with_line('JAVA_HOME=/usr/lib/jvm/jdk-8-oracle-x64/') }
+  end
+
+  context 'when select oracle-java8-jre for Ubuntu Bionic (18.04)' do
+    let(:facts) { { osfamily: 'Debian', operatingsystem: 'Ubuntu', lsbdistcodename: 'bionic', operatingsystemrelease: '18.04', architecture: 'amd64' } }
+    let(:params) { { 'distribution' => 'oracle-java8-jre' } }
+
+    it { is_expected.to contain_package('java').with_name('oracle-java8-jre') }
+    it { is_expected.to contain_file_line('java-home-environment').with_line('JAVA_HOME=/usr/lib/jvm/jre-8-oracle-x64/') }
+  end
+
+  context 'when select openjdk-8-jdk for Ubuntu Bionic (18.04)' do
+    let(:facts) { { osfamily: 'Debian', operatingsystem: 'Ubuntu', lsbdistcodename: 'bionic', operatingsystemrelease: '18.04', architecture: 'amd64' } }
+    let(:params) { { 'distribution' => 'openjdk-8-jdk' } }
+
+    it { is_expected.to contain_package('java').with_name('openjdk-8-jdk') }
+    it { is_expected.to contain_file_line('java-home-environment').with_line('JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64/') }
+  end
+
+  context 'when select openjdk-8-jre-headless for Ubuntu Bionic (18.04)' do
+    let(:facts) { { osfamily: 'Debian', operatingsystem: 'Ubuntu', lsbdistcodename: 'bionic', operatingsystemrelease: '18.04', architecture: 'amd64' } }
+    let(:params) { { 'distribution' => 'openjdk-8-jre-headless' } }
+
+    it { is_expected.to contain_package('java').with_name('openjdk-8-jre-headless') }
+    it { is_expected.to contain_file_line('java-home-environment').with_line('JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64/') }
+  end
+
   context 'when select jdk for Ubuntu xenial (16.04) on ARM' do
     let(:facts) { { osfamily: 'Debian', operatingsystem: 'Ubuntu', lsbdistcodename: 'xenial', operatingsystemrelease: '16.04', architecture: 'armv7l' } }
     let(:params) { { 'distribution' => 'jdk' } }

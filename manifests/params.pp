@@ -189,6 +189,30 @@ class java::params {
               'alternative'      => "java-1.11.0-openjdk-${openjdk_architecture}",
               'alternative_path' => "/usr/lib/jvm/java-1.11.0-openjdk-${openjdk_architecture}/bin/java",
               'java_home'        => "/usr/lib/jvm/java-1.11.0-openjdk-${openjdk_architecture}/",
+            },
+            'openjdk-8-jdk' => {
+              'package'          => 'openjdk-8-jdk',
+              'alternative'      => "java-1.8.0-openjdk-${openjdk_architecture}",
+              'alternative_path' => "/usr/lib/jvm/java-1.8.0-openjdk-${openjdk_architecture}/bin/java",
+              'java_home'        => "/usr/lib/jvm/java-1.8.0-openjdk-${openjdk_architecture}/",
+            },
+            'openjdk-8-jre-headless' => {
+              'package'          => 'openjdk-8-jre-headless',
+              'alternative'      => "java-1.8.0-openjdk-${openjdk_architecture}",
+              'alternative_path' => "/usr/lib/jvm/java-1.8.0-openjdk-${openjdk_architecture}/bin/java",
+              'java_home'        => "/usr/lib/jvm/java-1.8.0-openjdk-${openjdk_architecture}/",
+            },
+            'oracle-java8-jdk' => {
+              'package'          => 'oracle-java8-jdk',
+              'alternative'      => "jdk-8-oracle-${oracle_architecture}",
+              'alternative_path' => "/usr/lib/jvm/jdk-8-oracle-${oracle_architecture}/bin/java",
+              'java_home'        => "/usr/lib/jvm/jdk-8-oracle-${oracle_architecture}/",
+            },
+            'oracle-java8-jre' => {
+              'package'          => 'oracle-java8-jre',
+              'alternative'      => "jre-8-oracle-${oracle_architecture}",
+              'alternative_path' => "/usr/lib/jvm/jre-8-oracle-${oracle_architecture}/bin/java",
+              'java_home'        => "/usr/lib/jvm/jre-8-oracle-${oracle_architecture}/",
             }
           }
         }

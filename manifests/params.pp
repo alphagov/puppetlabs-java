@@ -15,43 +15,58 @@ class java::params {
   case $::osfamily {
     'RedHat': {
       case $::operatingsystem {
-        'RedHat', 'CentOS', 'OracleLinux', 'Scientific', 'OEL': {
+        'RedHat', 'CentOS', 'OracleLinux', 'Scientific', 'OEL', 'SLC', 'CloudLinux': {
           if (versioncmp($::operatingsystemrelease, '5.0') < 0) {
             $jdk_package = 'java-1.6.0-sun-devel'
             $jre_package = 'java-1.6.0-sun'
+            $java_home   = '/usr/lib/jvm/java-1.6.0-sun/jre/'
           }
+          # See cde7046 for why >= 5.0 < 6.3
           elsif (versioncmp($::operatingsystemrelease, '6.3') < 0) {
             $jdk_package = 'java-1.6.0-openjdk-devel'
             $jre_package = 'java-1.6.0-openjdk'
+            $java_home   = '/usr/lib/jvm/java-1.6.0/'
           }
+          # See PR#160 / c8e46b5 for why >= 6.3 < 7.1
           elsif (versioncmp($::operatingsystemrelease, '7.1') < 0) {
             $jdk_package = 'java-1.7.0-openjdk-devel'
             $jre_package = 'java-1.7.0-openjdk'
+            $java_home   = '/usr/lib/jvm/java-1.7.0/'
           }
           else {
             $jdk_package = 'java-1.8.0-openjdk-devel'
             $jre_package = 'java-1.8.0-openjdk'
+            $java_home   = '/usr/lib/jvm/java-1.8.0/'
           }
         }
         'Fedora': {
           if (versioncmp($::operatingsystemrelease, '21') < 0) {
             $jdk_package = 'java-1.7.0-openjdk-devel'
             $jre_package = 'java-1.7.0-openjdk'
+            $java_home   = "/usr/lib/jvm/java-1.7.0-openjdk-${::architecture}/"
           }
           else {
             $jdk_package = 'java-1.8.0-openjdk-devel'
             $jre_package = 'java-1.8.0-openjdk'
+            $java_home   = "/usr/lib/jvm/java-1.8.0-openjdk-${::architecture}/"
           }
         }
         'Amazon': {
           $jdk_package = 'java-1.7.0-openjdk-devel'
           $jre_package = 'java-1.7.0-openjdk'
+          $java_home   = "/usr/lib/jvm/java-1.7.0-openjdk-${::architecture}/"
         }
         default: { fail("unsupported os ${::operatingsystem}") }
       }
       $java = {
-        'jdk' => { 'package' => $jdk_package, },
-        'jre' => { 'package' => $jre_package, },
+        'jdk' => {
+          'package'   => $jdk_package,
+          'java_home' => $java_home,
+        },
+        'jre' => {
+          'package'   => $jre_package,
+          'java_home' => $java_home,
+        },
       }
     }
     'Debian': {
@@ -59,18 +74,23 @@ class java::params {
         'amd64' => 'x64',
         default => $::architecture
       }
+      $openjdk_architecture = $::architecture ? {
+        'aarch64' => 'arm64',
+        'armv7l'  => 'armhf',
+        default   => $::architecture
+      }
       case $::lsbdistcodename {
         'lenny', 'squeeze', 'lucid', 'natty': {
           $java  = {
             'jdk' => {
               'package'          => 'openjdk-6-jdk',
-              'alternative'      => "java-6-openjdk-${::architecture}",
+              'alternative'      => "java-6-openjdk-${openjdk_architecture}",
               'alternative_path' => '/usr/lib/jvm/java-6-openjdk/jre/bin/java',
               'java_home'        => '/usr/lib/jvm/java-6-openjdk/jre/',
             },
             'jre' => {
               'package'          => 'openjdk-6-jre-headless',
-              'alternative'      => "java-6-openjdk-${::architecture}",
+              'alternative'      => "java-6-openjdk-${openjdk_architecture}",
               'alternative_path' => '/usr/lib/jvm/java-6-openjdk/jre/bin/java',
               'java_home'        => '/usr/lib/jvm/java-6-openjdk/jre/',
             },
@@ -92,15 +112,15 @@ class java::params {
           $java =  {
             'jdk' => {
               'package'          => 'openjdk-7-jdk',
-              'alternative'      => "java-1.7.0-openjdk-${::architecture}",
-              'alternative_path' => "/usr/lib/jvm/java-1.7.0-openjdk-${::architecture}/bin/java",
-              'java_home'        => "/usr/lib/jvm/java-1.7.0-openjdk-${::architecture}/",
+              'alternative'      => "java-1.7.0-openjdk-${openjdk_architecture}",
+              'alternative_path' => "/usr/lib/jvm/java-1.7.0-openjdk-${openjdk_architecture}/bin/java",
+              'java_home'        => "/usr/lib/jvm/java-1.7.0-openjdk-${openjdk_architecture}/",
             },
             'jre' => {
               'package'          => 'openjdk-7-jre-headless',
               'alternative'      => "java-1.7.0-openjdk-${::architecture}",
-              'alternative_path' => "/usr/lib/jvm/java-1.7.0-openjdk-${::architecture}/bin/java",
-              'java_home'        => "/usr/lib/jvm/java-1.7.0-openjdk-${::architecture}/",
+              'alternative_path' => "/usr/lib/jvm/java-1.7.0-openjdk-${openjdk_architecture}/bin/java",
+              'java_home'        => "/usr/lib/jvm/java-1.7.0-openjdk-${openjdk_architecture}/",
             },
             'oracle-jre' => {
               'package'          => 'oracle-j2re1.7',
@@ -140,19 +160,59 @@ class java::params {
             },
           }
         }
-        'vivid', 'wily', 'xenial': {
+        'stretch', 'vivid', 'wily', 'xenial', 'yakkety', 'zesty', 'artful': {
           $java =  {
             'jdk' => {
               'package'          => 'openjdk-8-jdk',
-              'alternative'      => "java-1.8.0-openjdk-${::architecture}",
-              'alternative_path' => "/usr/lib/jvm/java-1.8.0-openjdk-${::architecture}/bin/java",
-              'java_home'        => "/usr/lib/jvm/java-1.8.0-openjdk-${::architecture}/",
+              'alternative'      => "java-1.8.0-openjdk-${openjdk_architecture}",
+              'alternative_path' => "/usr/lib/jvm/java-1.8.0-openjdk-${openjdk_architecture}/bin/java",
+              'java_home'        => "/usr/lib/jvm/java-1.8.0-openjdk-${openjdk_architecture}/",
             },
             'jre' => {
               'package'          => 'openjdk-8-jre-headless',
-              'alternative'      => "java-1.8.0-openjdk-${::architecture}",
-              'alternative_path' => "/usr/lib/jvm/java-1.8.0-openjdk-${::architecture}/bin/java",
-              'java_home'        => "/usr/lib/jvm/java-1.8.0-openjdk-${::architecture}/",
+              'alternative'      => "java-1.8.0-openjdk-${openjdk_architecture}",
+              'alternative_path' => "/usr/lib/jvm/java-1.8.0-openjdk-${openjdk_architecture}/bin/java",
+              'java_home'        => "/usr/lib/jvm/java-1.8.0-openjdk-${openjdk_architecture}/",
+            }
+          }
+        }
+        'bionic': {
+          $java =  {
+            'jdk' => {
+              'package'          => 'openjdk-11-jdk',
+              'alternative'      => "java-1.11.0-openjdk-${openjdk_architecture}",
+              'alternative_path' => "/usr/lib/jvm/java-1.11.0-openjdk-${openjdk_architecture}/bin/java",
+              'java_home'        => "/usr/lib/jvm/java-1.11.0-openjdk-${openjdk_architecture}/",
+            },
+            'jre' => {
+              'package'          => 'openjdk-11-jre-headless',
+              'alternative'      => "java-1.11.0-openjdk-${openjdk_architecture}",
+              'alternative_path' => "/usr/lib/jvm/java-1.11.0-openjdk-${openjdk_architecture}/bin/java",
+              'java_home'        => "/usr/lib/jvm/java-1.11.0-openjdk-${openjdk_architecture}/",
+            },
+            'openjdk-8-jdk' => {
+              'package'          => 'openjdk-8-jdk',
+              'alternative'      => "java-1.8.0-openjdk-${openjdk_architecture}",
+              'alternative_path' => "/usr/lib/jvm/java-1.8.0-openjdk-${openjdk_architecture}/bin/java",
+              'java_home'        => "/usr/lib/jvm/java-1.8.0-openjdk-${openjdk_architecture}/",
+            },
+            'openjdk-8-jre-headless' => {
+              'package'          => 'openjdk-8-jre-headless',
+              'alternative'      => "java-1.8.0-openjdk-${openjdk_architecture}",
+              'alternative_path' => "/usr/lib/jvm/java-1.8.0-openjdk-${openjdk_architecture}/bin/java",
+              'java_home'        => "/usr/lib/jvm/java-1.8.0-openjdk-${openjdk_architecture}/",
+            },
+            'oracle-java8-jdk' => {
+              'package'          => 'oracle-java8-jdk',
+              'alternative'      => "jdk-8-oracle-${oracle_architecture}",
+              'alternative_path' => "/usr/lib/jvm/jdk-8-oracle-${oracle_architecture}/bin/java",
+              'java_home'        => "/usr/lib/jvm/jdk-8-oracle-${oracle_architecture}/",
+            },
+            'oracle-java8-jre' => {
+              'package'          => 'oracle-java8-jre',
+              'alternative'      => "jre-8-oracle-${oracle_architecture}",
+              'alternative_path' => "/usr/lib/jvm/jre-8-oracle-${oracle_architecture}/bin/java",
+              'java_home'        => "/usr/lib/jvm/jre-8-oracle-${oracle_architecture}/",
             }
           }
         }
@@ -161,48 +221,96 @@ class java::params {
     }
     'OpenBSD': {
       $java = {
-        'jdk' => { 'package' => 'jdk', },
-        'jre' => { 'package' => 'jre', },
+        'jdk' => {
+          'package'   => 'jdk',
+          'java_home' => '/usr/local/jdk/',
+        },
+        'jre' => {
+          'package'   => 'jre',
+          'java_home' => '/usr/local/jdk/',
+        },
       }
     }
     'FreeBSD': {
       $java = {
-        'jdk' => { 'package' => 'openjdk', },
-        'jre' => { 'package' => 'openjdk-jre', },
+        'jdk' => {
+          'package'   => 'openjdk',
+          'java_home' => '/usr/local/openjdk7/',
+        },
+        'jre' => {
+          'package'   => 'openjdk-jre',
+          'java_home' => '/usr/local/openjdk7/',
+        },
       }
     }
     'Solaris': {
       $java = {
-        'jdk' => { 'package' => 'developer/java/jdk-7', },
-        'jre' => { 'package' => 'runtime/java/jre-7', },
+        'jdk' => {
+          'package'   => 'developer/java/jdk-7',
+          'java_home' => '/usr/jdk/instances/jdk1.7.0/',
+        },
+        'jre' => {
+          'package'   => 'runtime/java/jre-7',
+          'java_home' => '/usr/jdk/instances/jdk1.7.0/',
+        },
       }
     }
     'Suse': {
       case $::operatingsystem {
         'SLES': {
-          if (versioncmp($::operatingsystemrelease, '12') >= 0) {
+          if (versioncmp($::operatingsystemrelease, '12.1') >= 0) {
+            $jdk_package = 'java-1_8_0-openjdk-devel'
+            $jre_package = 'java-1_8_0-openjdk'
+            $java_home   = '/usr/lib64/jvm/java-1.8.0-openjdk-1.8.0/'
+          } elsif (versioncmp($::operatingsystemrelease, '12') >= 0) {
             $jdk_package = 'java-1_7_0-openjdk-devel'
             $jre_package = 'java-1_7_0-openjdk'
+            $java_home   = '/usr/lib64/jvm/java-1.7.0-openjdk-1.7.0/'
           } elsif (versioncmp($::operatingsystemrelease, '11.4') >= 0) {
-            $jdk_package = 'java-1_7_0-ibm-devel'
-            $jre_package = 'java-1_7_0-ibm'
+            $jdk_package = 'java-1_7_1-ibm-devel'
+            $jre_package = 'java-1_7_1-ibm'
+            $java_home   = '/usr/lib64/jvm/java-1.7.1-ibm-1.7.1/'
           } else {
             $jdk_package = 'java-1_6_0-ibm-devel'
             $jre_package = 'java-1_6_0-ibm'
+            $java_home   = '/usr/lib64/jvm/java-1.6.0-ibm-1.6.0/'
           }
         }
         'OpenSuSE': {
           $jdk_package = 'java-1_7_0-openjdk-devel'
           $jre_package = 'java-1_7_0-openjdk'
+          $java_home   = '/usr/lib64/jvm/java-1.7.0-openjdk-1.7.0/'
         }
         default: {
           $jdk_package = 'java-1_6_0-ibm-devel'
           $jre_package = 'java-1_6_0-ibm'
+          $java_home   = '/usr/lib64/jvm/java-1.6.0-ibd-1.6.0/'
         }
       }
       $java = {
-        'jdk' => { 'package' => $jdk_package, },
-        'jre' => { 'package' => $jre_package, },
+        'jdk' => {
+          'package'   => $jdk_package,
+          'java_home' => $java_home,
+        },
+        'jre' => {
+          'package'   => $jre_package,
+          'java_home' => $java_home,
+        },
+      }
+    }
+    'Archlinux': {
+      $jdk_package = 'jdk8-openjdk'
+      $jre_package = 'jre8-openjdk'
+      $java_home   = '/usr/lib/jvm/java-8-openjdk/jre/'
+      $java = {
+        'jdk' => {
+          'package'   => $jdk_package,
+          'java_home' => $java_home,
+        },
+        'jre' => {
+          'package'   => $jre_package,
+          'java_home' => $java_home,
+        },
       }
     }
     default: { fail("unsupported platform ${::osfamily}") }
